@@ -1,0 +1,170 @@
+{
+    "detection_rules": {
+        "windows": {
+            "failed_login": {
+                "event_id": "4625",
+                "threshold": 5,
+                "time_window_minutes": 5,
+                "whitelist_users": ["Administrator", "Guest"],
+                "whitelist_ips": ["192.168.1.100", "10.0.0.5"]
+            },
+            "privilege_escalation": {
+                "event_id_4672": "4672",
+                "event_id_4756": "4756",
+                "event_id_4728": "4728",
+                "sensitive_privileges_patterns": [
+                    "SeDebugPrivilege", "SeTakeOwnershipPrivilege", "SeLoadDriverPrivilege", "SeRestorePrivilege", "SeBackupPrivilege"
+                ],
+                "admin_groups_patterns": [
+                    "Domain Admins", "Enterprise Admins", "Administrators", "Backup Operators", "Account Operators"
+                ],
+                "whitelist_users": ["ServiceAccount$", "HealthCheckUser", "BackupAdmin"]
+            },
+            "suspicious_process": {
+                "event_id": "4688",
+                "suspicious_cmd_patterns": [
+                    "powershell\\.exe.*-EncodedCommand",
+                    "cmd\\.exe.* /c ",
+                    "certutil\\.exe.* -urlcache",
+                    "bitsadmin\\.exe.* /transfer",
+                    "reg\\.exe add",
+                    "whoami",
+                    "net user",
+                    "tasklist",
+                    "schtasks",
+                    "wmic",
+                    "\\bmshta\\.exe\\b",
+                    "\\brundll32\\.exe\\b",
+                    "\\bregedit\\.exe\\b"
+                ],
+                "standard_paths": [
+                    "C:\\\\Windows\\\\System32\\\\",
+                    "C:\\\\Program Files\\\\",
+                    "C:\\\\Program Files (x86)\\\\",
+                    "C:\\\\Windows\\\\SysWOW64\\\\"
+                ],
+                "whitelist_paths": [
+                    "C:\\\\Program Files\\\\CustomApp\\\\legit_script\\.ps1",
+                    "C:\\\\Users\\\\Admin\\\\Desktop\\\\MyTools\\\\safe_tool\\.exe",
+                    "C:\\\\Windows\\\\Temp\\\\legit_temp_file\\.exe"
+                ]
+            },
+            "malware_execution": {
+                "event_id_defender_detect": "1006",
+                "event_id_defender_action": "1007",
+                "event_id_process_creation": "4688",
+                "malicious_process_patterns": [
+                    "\\bpowershell_ise\\.exe\\b",
+                    "\\bcmd\\.exe\\b",
+                    "\\bexplorer\\.exe\\b",
+                    "\\bwinword\\.exe\\b.*\\.docm",
+                    "\\bexcel\\.exe\\b.*\\.xlsm",
+                    "\\bacrobat\\.exe\\b.*\\.js",
+                    "\\bmshta\\.exe\\b",
+                    "\\brundll32\\.exe\\b",
+                    "\\bwscript\\.exe\\b",
+                    "\\bcscript\\.exe\\b"
+                ]
+            },
+            "data_exfiltration": {
+                "sysmon_id_raw_access_read": "9",
+                "sysmon_id_network_connection": "3",
+                "event_id_network_status_change": "4004",
+                "common_ports": [20, 21, 22, 23, 25, 53, 80, 110, 135, 137, 138, 139, 143, 443, 445, 3389, 8080, 5985, 5986],
+                "known_bad_ips": ["1.1.1.1", "8.8.8.8"],
+                "whitelist_ips": ["192.168.1.1", "172.16.0.10", "10.1.1.1"]
+            }
+        },
+        "syslog": {
+            "failed_login": {
+                "patterns": [
+                    "Failed password for",
+                    "authentication failure",
+                    "Invalid user",
+                    "Disconnected from authenticating user"
+                ],
+                "threshold": 5,
+                "time_window_minutes": 5,
+                "whitelist_users": ["root", "admin_backup", "healthcheck"],
+                "whitelist_ips": ["10.10.10.1", "192.168.0.5", "172.20.1.10"]
+            },
+            "privilege_escalation": {
+                "patterns": [
+                    "sudo: .* COMMAND=",
+                    "session opened for user root",
+                    "root:x:0:0",
+                    "groupadd.*wheel",
+                    "usermod -aG sudo"
+                ],
+                "whitelist_users": ["ansible_user", "jenkins_svc", "devops_automation"]
+            },
+            "suspicious_process": {
+                "patterns": [
+                    "CRON\\[\\\\d+\\]: pam_unix\\\\(cron:session\\\\): session opened for user root by \\\\(uid=0\\\\)",
+                    "CRON\\[\\\\d+\\]: pam_unix\\\\(cron:session\\\\): session closed for user root",
+                    "kernel: .* suspicious",
+                    "systemd: .* failed",
+                    "unusual activity",
+                    "abnormal process termination",
+                    "unexpected connection"
+                ],
+                "whitelist_paths": ["/usr/local/bin/legit_cron.sh", "/opt/monitoring/agent.sh"]
+            },
+            "malware_execution": {
+                "patterns": [
+                    "malware detected",
+                    "virus found",
+                    "attack detected",
+                    "suspicious executable",
+                    "clamav: .* FOUND",
+                    "DShield Block"
+                ]
+            },
+            "data_exfiltration": {
+                "patterns": [
+                    "large data transfer",
+                    "outbound connection to .* unusual",
+                    "data uploaded",
+                    "ssh: Accepted password for .* from .* port .* ssh2",
+                    "ftp: .* transferred",
+                    "scp: .* uploaded",
+                    "rsync: .* transferred",
+                    "external_ip_connection.*large_payload"
+                ],
+                "whitelist_ips": ["1.2.3.4", "your_internal_backup_server_ip", "10.0.0.100"]
+            }
+        }
+    },
+    "fair_parameters": {
+        "failed_login": {
+            "TEF_base": 0.1,
+            "LEF_base": 0.05,
+            "LM_min": 100,
+            "LM_max": 1000
+        },
+        "privilege_escalation": {
+            "TEF_base": 0.05,
+            "LEF_base": 0.2,
+            "LM_min": 5000,
+            "LM_max": 50000
+        },
+        "suspicious_process": {
+            "TEF_base": 0.08,
+            "LEF_base": 0.1,
+            "LM_min": 500,
+            "LM_max": 5000
+        },
+        "malware_execution": {
+            "TEF_base": 0.03,
+            "LEF_base": 0.3,
+            "LM_min": 10000,
+            "LM_max": 100000
+        },
+        "data_exfiltration": {
+            "TEF_base": 0.02,
+            "LEF_base": 0.5,
+            "LM_min": 20000,
+            "LM_max": 200000
+        }
+    }
+}

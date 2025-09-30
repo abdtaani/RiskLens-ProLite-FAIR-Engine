@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv/
+
+# Logs and Reports (Generated Outputs - CRITICAL TO REMOVE)
+logs/
+reports/
+fair_results_*.csv
+incidents_*.json
+RiskReport_*.pdf
+*.log
+*.evtx
